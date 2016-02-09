@@ -12,6 +12,7 @@
 # Dave Stern / https://github.com/davestern
 # Josef / https://github.com/J0s3f
 # buckelij / https://github.com/buckelij
+# metalcated / https://github.com/metalcated
 # https://github.com/ccomerImmerge
 
 #confirms that executables required for succesful script execution are available
@@ -56,7 +57,8 @@ create_EBS_Snapshot_Tags() {
   snapshot_tags="Key=CreatedBy,Value=ec2-automate-backup"
   #if $name_tag_create is true then append ec2ab_${ebs_selected}_$current_date to the variable $snapshot_tags
   if $name_tag_create; then
-    snapshot_tags="$snapshot_tags Key=Name,Value=ec2ab_${ebs_selected}_$current_date"
+    snapshot_tags="$snapshot_tags Key=Name,Value=${ec2_snapshot_instance_name}_${current_date}"
+    #snapshot_tags="$snapshot_tags Key=Name,Value=ec2ab_${ebs_selected}_$current_date"
   fi
   #if $hostname_tag_create is true then append --tag InitiatingHost=$(hostname -f) to the variable $snapshot_tags
   if $hostname_tag_create; then
@@ -187,7 +189,8 @@ if [[ -z $region ]]; then
 fi
 
 #sets date variable
-current_date=$(date -u +%s)
+#current_date=$(date -u +%s)
+current_date=$(date -u +'%Y%m%d_%H:%M:%S')
 
 #sets the PurgeAfterFE tag to the number of seconds that a snapshot should be retained
 if [[ -n $purge_after_input ]]; then
@@ -206,6 +209,10 @@ get_EBS_List
 for ebs_selected in $ebs_backup_list; do
   ec2_snapshot_description="ec2ab_${ebs_selected}_$current_date"
   ec2_snapshot_resource_id=$(aws ec2 create-snapshot --region $region --description $ec2_snapshot_description --volume-id $ebs_selected --output text --query SnapshotId 2>&1)
+  ec2_snapshot_instance_id=$(aws ec2 describe-volumes --region $region --volume-ids $ebs_selected --output text --query 'Volumes[*].{InstanceId:Attachments[0].InstanceId}')
+  if [[ $ec2_snapshot_instance_id != "None" ]]; then
+    ec2_snapshot_instance_name=$(aws ec2 describe-volumes --output text --volume-ids $ebs_selected|grep -w "Name"|awk {'print $3'})
+  fi 
   if [[ $? != 0 ]]; then
     echo -e "An error occurred when running ec2-create-snapshot. The error returned is below:\n$ec2_create_snapshot_result" 1>&2 ; exit 70
   fi  

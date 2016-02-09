@@ -57,7 +57,7 @@ create_EBS_Snapshot_Tags() {
   snapshot_tags="Key=CreatedBy,Value=ec2-automate-backup"
   #if $name_tag_create is true then append ec2ab_${ebs_selected}_$current_date to the variable $snapshot_tags
   if $name_tag_create; then
-    snapshot_tags="$snapshot_tags Key=Name,Value=${ec2_snapshot_instance_name}_${current_date}"
+    snapshot_tags="$snapshot_tags Key=Name,Value=${ec2_snapshot_instance_name}_${current_tag_date}"
     #snapshot_tags="$snapshot_tags Key=Name,Value=ec2ab_${ebs_selected}_$current_date"
   fi
   #if $hostname_tag_create is true then append --tag InitiatingHost=$(hostname -f) to the variable $snapshot_tags
@@ -189,8 +189,8 @@ if [[ -z $region ]]; then
 fi
 
 #sets date variable
-#current_date=$(date -u +%s)
-current_date=$(date -u +'%Y%m%d_%H:%M:%S')
+current_date=$(date -u +%s)
+current_tag_date=$(date -u +'%Y%m%d_%H:%M:%S')
 
 #sets the PurgeAfterFE tag to the number of seconds that a snapshot should be retained
 if [[ -n $purge_after_input ]]; then

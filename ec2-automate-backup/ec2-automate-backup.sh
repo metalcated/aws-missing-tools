@@ -72,6 +72,10 @@ create_EBS_Snapshot_Tags() {
   if $user_tags; then
     snapshot_tags="$snapshot_tags Key=Volume,Value=${ebs_selected} Key=Created,Value=$current_date"
   fi
+  # add sitecode tags
+  if $sitecode_tag; then
+    snapshot_tags="$snapshot_tags Key=Sitecode,Value=$ec2_sitecode_tag"
+  fi
   #if $snapshot_tags is not zero length then set the tag on the snapshot using aws ec2 create-tags
   if [[ -n $snapshot_tags ]]; then
     echo "Tagging Snapshot $ec2_snapshot_resource_id with the following Tags: $snapshot_tags"
@@ -151,9 +155,11 @@ hostname_tag_create=false
 user_tags=false
 #sets the Purge Snapshot feature to false - if purge_snapshots=true then snapshots will be purged
 purge_snapshots=false
+#sets sitecode tags
+sitecode_tag=false 
 #handles options processing
 
-while getopts :s:c:r:v:t:k:pnhu opt; do
+while getopts :s:c:r:v:t:k:pnhui opt; do
   case $opt in
     s) selection_method="$OPTARG" ;;
     c) cron_primer="$OPTARG" ;;
@@ -165,6 +171,7 @@ while getopts :s:c:r:v:t:k:pnhu opt; do
     h) hostname_tag_create=true ;;
     p) purge_snapshots=true ;;
     u) user_tags=true ;;
+    i) sitecode_tag=true ;;
     *) echo "Error with Options Input. Cause of failure is most likely that an unsupported parameter was passed or a parameter was passed without a corresponding option." 1>&2 ; exit 64 ;;
   esac
 done
@@ -198,7 +205,7 @@ if [[ -n $purge_after_input ]]; then
   if [[ -z $date_binary ]]; then
     get_date_binary
   fi
-  purge_after_date_fe=$(get_purge_after_date_fe)
+  purge_after_date_fe=$get_purge_after_date_fe
   echo "Snapshots taken by $app_name will be eligible for purging after the following date (the purge after date given in seconds from epoch): $purge_after_date_fe."
 fi
 
@@ -211,7 +218,10 @@ for ebs_selected in $ebs_backup_list; do
   ec2_snapshot_resource_id=$(aws ec2 create-snapshot --region $region --description $ec2_snapshot_description --volume-id $ebs_selected --output text --query SnapshotId 2>&1)
   ec2_snapshot_instance_id=$(aws ec2 describe-volumes --region $region --volume-ids $ebs_selected --output text --query 'Volumes[*].{InstanceId:Attachments[0].InstanceId}')
   if [[ $ec2_snapshot_instance_id != "None" ]]; then
-    ec2_snapshot_instance_name=$(aws ec2 describe-volumes --output text --volume-ids $ebs_selected|grep -w "Name"|awk {'print $3'})
+    ec2_snapshot_instance_name=$(aws ec2 describe-volumes --region $region --output text --volume-ids $ebs_selected|grep -w "Name"|awk {'print $3'})
+  fi
+  if [[ $sitecode_tag = "true" ]]; then
+    ec2_sitecode_tag=$(aws ec2 describe-volumes --region $region --output text --volume-ids $ebs_selected|grep -w "Sitecode"|awk {'print $3'})
   fi
   if [[ $? != 0 ]]; then
     echo -e "An error occurred when running ec2-create-snapshot. The error returned is below:\n$ec2_create_snapshot_result" 1>&2 ; exit 70

@@ -218,10 +218,10 @@ for ebs_selected in $ebs_backup_list; do
   ec2_snapshot_resource_id=$(aws ec2 create-snapshot --region $region --description $ec2_snapshot_description --volume-id $ebs_selected --output text --query SnapshotId 2>&1)
   ec2_snapshot_instance_id=$(aws ec2 describe-volumes --region $region --volume-ids $ebs_selected --output text --query 'Volumes[*].{InstanceId:Attachments[0].InstanceId}')
   if [[ $ec2_snapshot_instance_id != "None" ]]; then
-    ec2_snapshot_instance_name=$(aws ec2 describe-volumes --output text --volume-ids $ebs_selected|grep -w "Name"|awk {'print $3'})
+    ec2_snapshot_instance_name=$(aws ec2 describe-volumes --region $region --output text --volume-ids $ebs_selected|grep -w "Name"|awk {'print $3'})
   fi
   if [[ $sitecode_tag = "true" ]]; then
-    ec2_sitecode_tag=$(aws ec2 describe-volumes --output text --volume-ids $ebs_selected|grep -w "Sitecode"|awk {'print $3'})
+    ec2_sitecode_tag=$(aws ec2 describe-volumes --region $region --output text --volume-ids $ebs_selected|grep -w "Sitecode"|awk {'print $3'})
   fi
   if [[ $? != 0 ]]; then
     echo -e "An error occurred when running ec2-create-snapshot. The error returned is below:\n$ec2_create_snapshot_result" 1>&2 ; exit 70

@@ -156,7 +156,11 @@ user_tags=false
 #sets the Purge Snapshot feature to false - if purge_snapshots=true then snapshots will be purged
 purge_snapshots=false
 #sets sitecode tags
+<<<<<<< HEAD
 sitecode_tag=false 
+=======
+sitecode_tag=false
+>>>>>>> 416ae0c1a8bcdbbe2df3298b57fc63f0553e639a
 #handles options processing
 
 while getopts :s:c:r:v:t:k:pnhui opt; do

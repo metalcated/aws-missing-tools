@@ -15,16 +15,16 @@
 #define size of instance clone - if you are uising paravirtual instances make sure to use a size that works with both instance types, same goes for hvm
 ec2_ami_nsize="m3.medium"
 #define cert
-ec2_ami_ncert="techops-2015.02.13"
+ec2_ami_ncert="your_cert_name"
 #define subnet 
-ec2_ami_nsubnet="subnet-d5b32bb0"
+ec2_ami_nsubnet="subnet-id"
 #define security group
-ec2_ami_nsecgrp="sg-d53b6eb0"
+ec2_ami_nsecgrp="sg-id"
 #location of cert locally
-ec2_ami_lcert="/opt/aws/certs/techops-2015.02.13.pem"
+ec2_ami_lcert="/opt/aws/certs/your_cert_name.pem"
 #define source content to rsync
-ec2_instance_source="/iiidb"
-#define source files target 
+ec2_instance_source="/var/db"
+#define source files target to backup files to
 ec2_instance_target="/backups"
 
 #set some colors
@@ -35,6 +35,7 @@ normal=$(tput sgr0)
 
 #confirms that executables required for succesful script execution are available
 prerequisite_check() {
+  #install sshpass: https://gist.github.com/metalcated/d3ca67401d1ba649984d0299f0d5a5c5
   for prerequisite in basename cut date aws fping pigz pv tar sshpass; do
     #use of "hash" chosen as it is a shell builtin and will add programs to hash table, possibly speeding execution. Use of type also considered - open to suggestions.
     hash $prerequisite &> /dev/null

@@ -4,7 +4,7 @@
 ## Title:       AWS Glacier Archive Script
 ## Author:      metalcated: https://github.com/metalcated/aws-missing-tools
 ## Forked:	Partially forked from https://github.com/colinbjohnson/aws-missing-tools
-## Date:        04/28/2016
+## Date:        04/29/2016
 ## Version:     0.2
 ##
 ## Changelog:   0.1 - Initial Release
